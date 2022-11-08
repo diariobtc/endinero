@@ -1,4 +1,12 @@
 [package]
 name = "endinero"
-version = "0.0.1"
-authors = [ "DiarioBitcoin" ]
+version = "0.1.0"
+edition = "2021"
+authors = [ "DiarioBitcoin", "gubatron" ]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "endinero"
+path = "src/lib.rs"
+
+[dependencies]
