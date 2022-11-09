@@ -1,7 +1,11 @@
 # EnDinero
 
 ```rust
-let as_formatted_string_in_spanish = dbtc::endinero(some_float_value, max_decimals);
+use endinero::endinero;
+
+...
+
+let as_formatted_string_in_spanish = endinero::endinero(some_float_value, max_decimals);
 ```
 
 Convert a float value to a user friendly number, most often used to represent money amounts in Spanish (perhaps German and some other European locales work the same as in spanish)
