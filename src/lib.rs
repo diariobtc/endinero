@@ -15,21 +15,20 @@
 ///
 use log::info;
 
-/// `endinero::endinero` The most parametrizeable function in the library. Customize separators and precision.
+/// ## Customize the separator characters and decimal precision used to format the output of the given `f64` number
 ///
-/// Parameters:
-/// `amount`: the original `amount` in `f64`
+/// ## Parameters:
+/// **amount: f64**: the original `amount` in `f64`
 ///
-/// `max_decimal_places`: number of decimal digits to keep for `amounts > 0`
+/// **max_decimal_places: u16**: number of decimal digits to keep for `amounts > 0`
 ///
-/// `zero_comma_decimal_places`: number of decimal digits to keep for `amount < 1`
+/// **zero_comma_decimal_places: u16**: number of decimal digits to keep for `amount < 1`
 ///
-/// `thousands_separator`: character to be used to separate thousands on the integer part of `amount`
+/// **thousands_separator: char**: character to be used to separate thousands on the integer part of `amount`
 ///
-/// `radix_character`: character that separates the integer portion from the decimal portion (e.g. `.` for numbers in US locale but `,` for numbers in Spanish locales)
+/// **radix_character: char**: character that separates the integer portion from the decimal portion (e.g. `.` for numbers in US locale but `,` for numbers in Spanish locales)
 ///
-/// `decimal_separator`: character that separates decimal portions every thousandth
-
+/// **decimal_separator: char**: character that separates decimal portions every thousandth
 pub fn endinero_f64(
     amount: f64,
     max_decimal_places: u16,
@@ -59,6 +58,20 @@ pub fn endinero_f64(
     result
 }
 
+/// ## Customize the separator characters and decimal precision used to format the output of the given `f32` number
+///
+/// ## Parameters:
+/// **amount: f64**: the original `amount` in `f32`
+///
+/// **max_decimal_places: u16**: number of decimal digits to keep for `amounts > 0`
+///
+/// **zero_comma_decimal_places: u16**: number of decimal digits to keep for `amount < 1`
+///
+/// **thousands_separator: char**: character to be used to separate thousands on the integer part of `amount`
+///
+/// **radix_character: char**: character that separates the integer portion from the decimal portion (e.g. `.` for numbers in US locale but `,` for numbers in Spanish locales)
+///
+/// **decimal_separator: char**: character that separates decimal portions every thousandth
 pub fn endinero_f32(
     amount: f32,
     max_decimal_places: u16,
@@ -88,13 +101,26 @@ pub fn endinero_f32(
     result
 }
 
+/// Format `f64` input into a spanish money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `.`, Radix character: `,`, Decimals separator: ` `
 pub fn dinero_f64(amount: f64) -> String {
     endinero_f64(amount, 2, 17, '.', ',', ' ')
 }
 
+/// Format `f32` input into a spanish money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `.`, Radix character: `,`, Decimals separator: ` `
 pub fn dinero_f32(amount: f64) -> String {
     endinero_f64(amount, 2, 7, '.', ',', ' ')
 }
+
+/// Format `f64` input into a US money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `,`, Radix character: `.`, Decimals separator: ` `
+pub fn money_f64(amount: f64) -> String {
+    endinero_f64(amount, 2, 17, ',', '.', ' ')
+}
+
+/// Format `f32` input into a US money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `,`, Radix character: `.`, Decimals separator: ` `
+pub fn money_f32(amount: f64) -> String {
+    endinero_f64(amount, 2, 7, ',', '.', ' ')
+}
+
 
 fn integer_part_f64(amount: f64, thousands_separator: char) -> String {
     let int_part = amount.abs() as i64;
