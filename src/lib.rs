@@ -13,9 +13,6 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 ///
-
-/// Esto
-/// sale?
 use log::info;
 
 /// `endinero::endinero` The most parametrizeable function in the library. Customize separators and precision.
@@ -195,7 +192,19 @@ fn decimal_part_tests() {
     env_logger::try_init();
     assert_eq!(decimal_part(0.1, 1, ' '), "1");
     assert_eq!(decimal_part(0.12, 1, ' '), "1");
+
     assert_eq!(decimal_part(0.12, 2, ' '), "12");
+    assert_eq!(decimal_part(0.123, 2, ' '), "12");
+
+    assert_eq!(decimal_part(0.123, 3, ' '), "123");
+    assert_eq!(decimal_part(0.1234, 3, ' '), "123");
+
+    assert_eq!(decimal_part(0.1234, 4, ' '), "123 4");
+    assert_eq!(decimal_part(0.1234, 4, '.'), "123.4");
+
+    assert_eq!(decimal_part(0.222333444555, 12, '.'), "222.333.444.555");
+    assert_eq!(decimal_part(0.2223334445556, 12, '.'), "222.333.444.555");
+    assert_eq!(decimal_part(0.2223334445556, 13, '.'), "222.333.444.555.6");
 }
 
 #[test]
