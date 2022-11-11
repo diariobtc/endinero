@@ -47,7 +47,36 @@ pub fn endinero_f64(
     };
     let dec_part = decimal_part_f64(amount, total_decimals, decimals_separator);
     let result = format!("{}{}{}", int_part, radix_character, dec_part);
-    info!("endinero(amount={}, max_decimal_places={}, zero_comma_decimal_places={}, thousands_separator='{}', radix_character='{}', decimals_separator='{}') -> {}",
+    info!("endinero_f64(amount={}, max_decimal_places={}, zero_comma_decimal_places={}, thousands_separator='{}', radix_character='{}', decimals_separator='{}') -> {}",
+    amount,
+    max_decimal_places,
+    zero_comma_decimal_places,
+    thousands_separator,
+    radix_character,
+    decimals_separator,
+    result);
+
+    result
+}
+
+pub fn endinero_f32(
+    amount: f32,
+    max_decimal_places: u16,
+    zero_comma_decimal_places: u16,
+    thousands_separator: char,
+    radix_character: char,
+    decimals_separator: char,
+) -> String {
+    let int_part = integer_part_f32(amount, thousands_separator);
+
+    let total_decimals = if amount.abs() < 1.0 {
+        zero_comma_decimal_places
+    } else {
+        max_decimal_places
+    };
+    let dec_part = decimal_part_f32(amount, total_decimals, decimals_separator);
+    let result = format!("{}{}{}", int_part, radix_character, dec_part);
+    info!("endinero_f32(amount={}, max_decimal_places={}, zero_comma_decimal_places={}, thousands_separator='{}', radix_character='{}', decimals_separator='{}') -> {}",
     amount,
     max_decimal_places,
     zero_comma_decimal_places,
@@ -60,6 +89,10 @@ pub fn endinero_f64(
 }
 
 pub fn dinero_f64(amount: f64) -> String {
+    endinero_f64(amount, 2, 7, '.', ',', ' ')
+}
+
+pub fn dinero_f32(amount: f64) -> String {
     endinero_f64(amount, 2, 7, '.', ',', ' ')
 }
 
@@ -81,7 +114,31 @@ fn integer_part_f64(amount: f64, thousands_separator: char) -> String {
     formatted_int_digits.reverse();
     let result = formatted_int_digits.iter().collect::<String>();
     info!(
-        "endinero::integer_part({},'{}') -> {}",
+        "endinero::integer_part_f64({},'{}') -> {}",
+        amount, thousands_separator, result
+    );
+    result
+}
+
+fn integer_part_f32(amount: f32, thousands_separator: char) -> String {
+    let int_part = amount.abs() as i32;
+    let unsigned_int_digits_str = format!("{}", int_part);
+    let mut formatted_int_digits: Vec<char> = Vec::new();
+    let mut digits_added = 0;
+    for c in unsigned_int_digits_str.chars().rev() {
+        if digits_added > 0 && digits_added % 3 == 0 {
+            formatted_int_digits.push(thousands_separator.clone());
+        }
+        formatted_int_digits.push(c);
+        digits_added += 1;
+    }
+    if amount < 0f32 {
+        formatted_int_digits.push('-');
+    }
+    formatted_int_digits.reverse();
+    let result = formatted_int_digits.iter().collect::<String>();
+    info!(
+        "endinero::integer_part_f32({},'{}') -> {}",
         amount, thousands_separator, result
     );
     result
@@ -104,7 +161,30 @@ fn decimal_part_f64(amount: f64, total_decimals: u16, decimals_separator: char) 
     }
     let result = formatted_dec_digits.iter().collect::<String>();
     info!(
-        "endinero::decimal_part(amount={}, total_decimals={}, decimals_separator='{}') -> {}",
+        "endinero::decimal_part_f64(amount={}, total_decimals={}, decimals_separator='{}') -> {}",
+        amount, total_decimals, decimals_separator, result
+    );
+    result
+}
+
+fn decimal_part_f32(amount: f32, total_decimals: u16, decimals_separator: char) -> String {
+    let dec_digits_str = format!("{}", amount.abs() % 1.0).replace("0.", "");
+    let mut formatted_dec_digits: Vec<char> = Vec::new();
+    let mut digits_added = 0;
+    for c in dec_digits_str.chars() {
+        if digits_added > 0 && digits_added % 3 == 0 {
+            formatted_dec_digits.push(decimals_separator);
+        }
+        formatted_dec_digits.push(c);
+        digits_added += 1;
+
+        if digits_added == total_decimals {
+            break;
+        }
+    }
+    let result = formatted_dec_digits.iter().collect::<String>();
+    info!(
+        "endinero::decimal_part_f32(amount={}, total_decimals={}, decimals_separator='{}') -> {}",
         amount, total_decimals, decimals_separator, result
     );
     result
@@ -246,6 +326,10 @@ fn decimal_part_tests() {
     assert_eq!(decimal_part_f64(0.222333444555, 12, '.'), "222.333.444.555");
     assert_eq!(decimal_part_f64(0.2223334445556, 12, '.'), "222.333.444.555");
     assert_eq!(decimal_part_f64(0.2223334445556, 13, '.'), "222.333.444.555.6");
+
+    assert_eq!(decimal_part_f32(0.2223334445556, 7, '.'), "222.333.4");
+    // breaks after 7 digits, starts doing weird rounding
+    assert_ne!(decimal_part_f32(0.22233344455566, 8, '.'), "222.333.44");
 }
 
 #[test]
@@ -266,6 +350,8 @@ fn tests() {
     assert_eq!(dinero_f64(0.1234567), "0,123 456 7");
     assert_eq!(dinero_f64(10000000.1232456), "10.000.000,12");
 
-    let x = 1000000.1232456 as f32;
-    assert_eq!(dinero_f64(x as f64), "1.000.000,12");
+    assert_eq!(dinero_f64(1234567890123456.0) ,"1.234.567.890.123.456,0");
+
+    assert_eq!(dinero_f32(10000000.1232456), "10.000.000,12");
+    assert_eq!(dinero_f32(0.2223334445556), "0,222.333.4");
 }
