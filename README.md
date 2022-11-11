@@ -2,19 +2,28 @@
 
 ```rust
 use endinero::endinero;
-
-...
-
-let as_formatted_string_in_spanish = endinero::endinero(some_float_value, max_decimals);
+let as_formatted_string_in_spanish = endinero::endinero(some_float_value, max_decimals, '.', ',', ' ');
 ```
 
-Convert a float value to a user friendly number, most often used to represent money amounts in Spanish (perhaps German and some other European locales work the same as in spanish)
+```rust
+// convenience shorthand for formatting f32 in spanish
+use endinero::dinero_f32;
+let as_formatted_string_in_spanish = endinero::dinero_f32(some_f32);
+```
+
+```rust
+// convenience shorthand for formatting f64 in spanish
+use endinero::dinero_f64;
+let as_formatted_string_in_spanish = endinero::dinero_f64(some_f64);
+```
+
+Convert a float value to a user-friendly number, most often used to represent money amounts in Spanish (perhaps German and some other European locales work the same as in spanish)
 
 ```
 10.1             -> "10,1"
 10.111           -> "10,111"
 10000000.21      -> "10.000.000,21"
-0.22233344455566 -> "0.222.333.444.555.66"
+0.22233344455566 -> "0,222.333.444.555.66"
 ```
 
 ## Limits
