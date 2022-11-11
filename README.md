@@ -31,15 +31,26 @@ endinero::dinero_f32(0.22233344455566) -> "0,222 333 444 555 66"
 
 ## Limits
 
-Integer part works on up to `10^15` (Quadrillions/_Billardos_) when used with `f64` inputs 
+Integer part works on up to `10^14` Hundreds of trillions (Cientos de billones) when used with `f64` inputs 
 
-`endinero::dinero_f64(1234567890123456.0); // -> "1.234.567.890.123.456,0"`
+```rust
+assert_eq!(dinero_f64(123456789012345.1234) ,"123.456.789.012.345,12");
+```
 
 <hr>
 
 Decimal part works on up to 7 decimals when used with `f32` inputs
 
-`endinero::dinero_f32(0.2223334445556); // -> "0,222.333.4"`
+```rust
+assert_eq!(endinero::dinero_f32(0.2223334445556) ,"0,222 333 4");
+```
+
+<hr>
+
+For f64 if the number is less than 1, it can format up to 17 decimal places
+```rust
+assert_eq!(dinero_f64(0.12345678912345678) ,"0,123 456 789 123 456 78");
+```
 
 ## Installation
 
