@@ -39,10 +39,6 @@ pub fn endinero(
     decimals_separator: char,
 ) -> String {
     let int_part = integer_part(amount, thousands_separator);
-    info!(
-        "enddinero::integer_part(amount={}, thousands_separator='{}') -> {}",
-        amount, thousands_separator, int_part
-    );
 
     let total_decimals = if amount.abs() < 1.0 {
         zero_comma_decimal_places
@@ -50,11 +46,17 @@ pub fn endinero(
         max_decimal_places
     };
     let dec_part = decimal_part(amount, total_decimals, decimals_separator);
-    info!(
-        "enddinero::decimal_part(amount={}, total_decimals={}, decimals_separator='{}') -> {}",
-        amount, total_decimals, thousands_separator, int_part
-    );
-    format!("{}{}{}", int_part, radix_character, dec_part)
+    let result = format!("{}{}{}", int_part, radix_character, dec_part);
+    info!("endinero(amount={}, max_decimal_places={}, zero_comma_decimal_places={}, thousands_separator='{}', radix_character='{}', decimals_separator='{}') -> {}",
+    amount,
+    max_decimal_places,
+    zero_comma_decimal_places,
+    thousands_separator,
+    radix_character,
+    decimals_separator,
+    result);
+
+    result
 }
 
 fn integer_part(amount: f64, thousands_separator: char) -> String {
@@ -210,6 +212,15 @@ fn decimal_part_tests() {
 #[test]
 fn tests() {
     env_logger::try_init();
-    endinero(1234567.456, 2, 4, '.', ',', ' ');
-    endinero(-1234567.456, 2, 4, '.', ',', ' ');
+    assert_eq!(endinero(1234567.456, 2, 4, '.', ',', ' '), "1.234.567,45");
+    assert_eq!(
+        endinero(-1234567.456789, 2, 4, '.', ',', ' '),
+        "-1.234.567,45"
+    );
+
+    assert_eq!(endinero(0.456, 2, 4, '.', ',', ' '), "0,456");
+    assert_eq!(endinero(0.456789, 2, 4, '.', ',', '.'), "0,456.7");
+    assert_eq!(endinero(0.456789, 2, 5, '.', ',', '.'), "0,456.78");
+    assert_eq!(endinero(0.456789, 2, 5, '.', '🔻', '.'), "0🔻456.78");
+    assert_eq!(endinero(0.456789, 2, 6, '.', '🔻', '.'), "0🔻456.789");
 }
