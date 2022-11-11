@@ -332,6 +332,16 @@ fn tests() {
         "-1.234.567,45"
     );
 
+    assert_eq!(
+        endinero_f64(-1234567.456789, // amount
+                     4, // decimals for numbers > 0
+                     4, // decimals for numbers < 0
+                     '.', // thousands separator
+                     ',', // radix separator
+                     ' '), // decimals separator
+        "-1.234.567,456 7"
+    );
+
     assert_eq!(endinero_f64(0.456, 2, 4, '.', ',', ' '), "0,456");
     assert_eq!(endinero_f64(0.456789, 2, 4, '.', ',', '.'), "0,456.7");
     assert_eq!(endinero_f64(0.456789, 2, 5, '.', ',', '.'), "0,456.78");
@@ -349,6 +359,11 @@ fn tests() {
     assert_ne!(dinero_f64(x), "1.234.567.890.123.456,12");
     assert_eq!(dinero_f64(0.12345678912345678), "0,123 456 789 123 456 78");
 
+    assert_eq!(dinero_f32(10.111), "10,11");
+    assert_eq!(dinero_f32(-10.111), "-10,11");
     assert_eq!(dinero_f32(10000000.1232456), "10.000.000,12");
     assert_eq!(dinero_f32(0.2223334445556), "0,222 333 4");
+
+    assert_eq!(dinero_f32(10000000.12324567), "10.000.000,12");
+    assert_eq!(dinero_f32(0.1234567), "0,123 456 7");
 }

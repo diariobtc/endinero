@@ -1,33 +1,48 @@
 # EnDinero
 
 ```rust
-use endinero::endinero;
-let as_formatted_string_in_spanish = endinero::endinero(some_float_value, max_decimals, '.', ',', ' ');
-```
-
-```rust
 // convenience shorthand for formatting f32 in spanish, no rounding, it will truncate the decimals we don't want
 // outputs 2 decimals for amounts > 0, and 7 decimals for amounts < 1.
 // This is how we need it for our crypto market pages when dealing with some crapcoins that trade in very small amounts
 use endinero::dinero_f32;
-endinero::dinero_f32(10000000.12324567; // "10.000.000,12"
-endinero::dinero_f32(0.1234567); // "0,123 456 7"
+assert_eq!(endinero::dinero_f32(10000000.12324567), "10.000.000,12");
+assert_eq!(endinero::dinero_f32(0.1234567), "0,123 456 7");
 ```
 
 ```rust
 // convenience shorthand for formatting f64 in spanish
 use endinero::dinero_f64;
-let as_formatted_string_in_spanish = endinero::dinero_f64(0.22233344455566); // "0,222 333 444 555 66"
+assert_eq!(endinero::dinero_f64(0.22233344455566), "0,222 333 444 555 66");
 ```
 
 Convert a float value to a user-friendly number, most often used to represent money amounts in Spanish (perhaps German and some other European locales work the same as in spanish)
 
+```rust
+assert_eq!(dinero_f32(10.111), "10,11");
+assert_eq!(endinero::dinero_f32(-10.111), "-10,11");
+
+assert_eq!(endinero::dinero_f32(10000000.123), "10.000.000,21");
+assert_eq!(endinero::dinero_f32(0.1234567), "0,123 456 7");
+
+assert_eq!(endinero::dinero_f64(0.2223334445556677), "0,222 333 444 555 666 77");
 ```
-10.1             -> "10,1"
-10.111           -> "10,111"
-10000000.123      -> "10.000.000,21"
-endinero::dinero_f32(0.22233344455566) -> "0,222 333 444 555 66"
+
+If you need to specify thousand separators, decimal separators, radix character, how many decimals to show for numbers > 0 or for numbers < 1
+use the `endinero::endinero` function that receives all the parameters.
+
+```rust
+use endinero::endinero;
+assert_eq!(
+    endinero_f64(-1234567.456789, // amount 
+                 4, // decimals for numbers > 0
+                 4, // decimals for numbers < 0
+                 '.', // thousands separator
+                 ',', // radix separator
+                 ' '), // decimals separator
+    "-1.234.567,456 7"
+);
 ```
+
 
 ## Limits
 
