@@ -1,6 +1,6 @@
 [package]
 name = "endinero"
-version = "0.1.2"
+version = "0.1.3"
 rust-version = "1.65"
 edition = "2021"
 authors = [ "DiarioBitcoin", "gubatron" ]
@@ -15,5 +15,3 @@ name = "endinero"
 path = "src/lib.rs"
 
 [dependencies]
-log = "0.4.17"
-env_logger = "0.9.1"

@@ -13,7 +13,6 @@
 /// See the License for the specific language governing permissions and
 /// limitations under the License.
 ///
-use log::info;
 
 /// ## Customize the separator characters and decimal precision used to format the output of the given `f64` number
 ///
@@ -38,24 +37,13 @@ pub fn endinero_f64(
     decimals_separator: char,
 ) -> String {
     let int_part = integer_part_f64(amount, thousands_separator);
-
     let total_decimals = if amount.abs() < 1.0f64 {
         zero_comma_decimal_places
     } else {
         max_decimal_places
     };
     let dec_part = decimal_part_f64(amount, total_decimals, decimals_separator);
-    let result = format!("{}{}{}", int_part, radix_character, dec_part);
-    info!("endinero_f64(amount={}, max_decimal_places={}, zero_comma_decimal_places={}, thousands_separator='{}', radix_character='{}', decimals_separator='{}') -> {}",
-    amount,
-    max_decimal_places,
-    zero_comma_decimal_places,
-    thousands_separator,
-    radix_character,
-    decimals_separator,
-    result);
-
-    result
+    format!("{}{}{}", int_part, radix_character, dec_part)
 }
 
 /// ## Customize the separator characters and decimal precision used to format the output of the given `f32` number
@@ -80,25 +68,17 @@ pub fn endinero_f32(
     radix_character: char,
     decimals_separator: char,
 ) -> String {
+    // INTEGER PART
     let int_part = integer_part_f32(amount, thousands_separator);
-
     let total_decimals = if amount.abs() < 1.0 {
         zero_comma_decimal_places
     } else {
         max_decimal_places
     };
+    // DECIMAL PART
     let dec_part = decimal_part_f32(amount, total_decimals, decimals_separator);
-    let result = format!("{}{}{}", int_part, radix_character, dec_part);
-    info!("endinero_f32(amount={}, max_decimal_places={}, zero_comma_decimal_places={}, thousands_separator='{}', radix_character='{}', decimals_separator='{}') -> {}",
-    amount,
-    max_decimal_places,
-    zero_comma_decimal_places,
-    thousands_separator,
-    radix_character,
-    decimals_separator,
-    result);
-
-    result
+    // RESULT
+    format!("{}{}{}", int_part, radix_character, dec_part)
 }
 
 /// Format `f64` input into a spanish money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `.`, Radix character: `,`, Decimals separator: ` `
@@ -107,8 +87,8 @@ pub fn dinero_f64(amount: f64) -> String {
 }
 
 /// Format `f32` input into a spanish money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `.`, Radix character: `,`, Decimals separator: ` `
-pub fn dinero_f32(amount: f64) -> String {
-    endinero_f64(amount, 2, 7, '.', ',', ' ')
+pub fn dinero_f32(amount: f32) -> String {
+    endinero_f32(amount, 2, 7, '.', ',', ' ')
 }
 
 /// Format `f64` input into a US money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `,`, Radix character: `.`, Decimals separator: ` `
@@ -121,9 +101,8 @@ pub fn money_f32(amount: f64) -> String {
     endinero_f64(amount, 2, 7, ',', '.', ' ')
 }
 
-
 fn integer_part_f64(amount: f64, thousands_separator: char) -> String {
-    let int_part = amount.abs() as i64;
+    let int_part = amount.abs().trunc() as i64;
     let unsigned_int_digits_str = format!("{}", int_part);
     let mut formatted_int_digits: Vec<char> = Vec::new();
     let mut digits_added = 0;
@@ -139,16 +118,12 @@ fn integer_part_f64(amount: f64, thousands_separator: char) -> String {
     }
     formatted_int_digits.reverse();
     let result = formatted_int_digits.iter().collect::<String>();
-    info!(
-        "endinero::integer_part_f64({},'{}') -> {}",
-        amount, thousands_separator, result
-    );
     result
 }
 
 fn integer_part_f32(amount: f32, thousands_separator: char) -> String {
-    let int_part = amount.abs() as i32;
-    let unsigned_int_digits_str = format!("{}", int_part);
+    let int_part = amount.abs().trunc() as i32;
+    let unsigned_int_digits_str = int_part.to_string();//format!("{}", int_part);
     let mut formatted_int_digits: Vec<char> = Vec::new();
     let mut digits_added = 0;
     for c in unsigned_int_digits_str.chars().rev() {
@@ -163,20 +138,11 @@ fn integer_part_f32(amount: f32, thousands_separator: char) -> String {
     }
     formatted_int_digits.reverse();
     let result = formatted_int_digits.iter().collect::<String>();
-    info!(
-        "endinero::integer_part_f32({},'{}') -> {}",
-        amount, thousands_separator, result
-    );
     result
 }
 
 fn decimal_part_f64(amount: f64, total_decimals: u16, decimals_separator: char) -> String {
-    let dec_digits_str = format!("{}", amount.abs() % 1.0f64).replace("0.", "");
-    info!(
-        "decimal_part_f64(amount={}): dec_digits_str = {}",
-        amount, dec_digits_str
-    );
-
+    let dec_digits_str = format!("{:.17}", amount).split(".").collect::<Vec<&str>>().get(1).unwrap().to_string();
     let mut formatted_dec_digits: Vec<char> = Vec::new();
     let mut digits_added = 0;
     for c in dec_digits_str.chars() {
@@ -190,16 +156,21 @@ fn decimal_part_f64(amount: f64, total_decimals: u16, decimals_separator: char) 
             break;
         }
     }
+
+    // remove any zeroes or blank spaces left over at the end
+    while formatted_dec_digits.len() > 1 &&
+        formatted_dec_digits.last().is_some() &&
+        (formatted_dec_digits.last().unwrap() == &'0' ||
+            formatted_dec_digits.last().unwrap() == &' ') {
+        formatted_dec_digits.pop();
+    }
+
     let result = formatted_dec_digits.iter().collect::<String>();
-    info!(
-        "endinero::decimal_part_f64(amount={}, total_decimals={}, decimals_separator='{}') -> {}",
-        amount, total_decimals, decimals_separator, result
-    );
     result
 }
 
 fn decimal_part_f32(amount: f32, total_decimals: u16, decimals_separator: char) -> String {
-    let dec_digits_str = format!("{}", amount.abs() % 1.0).replace("0.", "");
+    let dec_digits_str = format!("{:.7}", amount).split(".").collect::<Vec<&str>>().get(1).unwrap().to_string();
     let mut formatted_dec_digits: Vec<char> = Vec::new();
     let mut digits_added = 0;
     for c in dec_digits_str.chars() {
@@ -213,79 +184,82 @@ fn decimal_part_f32(amount: f32, total_decimals: u16, decimals_separator: char) 
             break;
         }
     }
+    // remove any zeroes or blank spaces left over at the end
+    while
+    formatted_dec_digits.len() > 1 &&
+        formatted_dec_digits.last().is_some() &&
+        (formatted_dec_digits.last().unwrap() == &'0' ||
+            formatted_dec_digits.last().unwrap() == &' ') {
+        formatted_dec_digits.pop();
+    }
+
     let result = formatted_dec_digits.iter().collect::<String>();
-    info!(
-        "endinero::decimal_part_f32(amount={}, total_decimals={}, decimals_separator='{}') -> {}",
-        amount, total_decimals, decimals_separator, result
-    );
     result
 }
 
 #[test]
 fn integer_part_tests() {
-    env_logger::try_init().unwrap();
-
-    info!("Zeroes");
+    // Zeroes
     assert_eq!(integer_part_f64(0.0, '.'), "0");
     assert_eq!(integer_part_f64(-0.0, '.'), "0");
     assert_eq!(integer_part_f64(-0.0001, '.'), "-0");
 
-    info!("Units [1-9]");
+    // Units [1-9]
     assert_eq!(integer_part_f64(1.0, '.'), "1");
     assert_eq!(integer_part_f64(-1.0, '.'), "-1");
 
-    info!("Tens");
+    // Tens
     assert_eq!(integer_part_f64(12.0, '.'), "12");
     assert_eq!(integer_part_f64(-12.0, '.'), "-12");
 
-    info!("Hundreds");
+    // Hundreds
     assert_eq!(integer_part_f64(123.0, '.'), "123");
     assert_eq!(integer_part_f64(-123.0, '.'), "-123");
 
-    info!("Thousands");
+    // Thousands
     assert_eq!(integer_part_f64(1234.0, '.'), "1.234");
     assert_eq!(integer_part_f64(-1234.0, '.'), "-1.234");
 
-    info!("Tens of thousands");
+    // Tens of thousands
     assert_eq!(integer_part_f64(12345.0, '.'), "12.345");
     assert_eq!(integer_part_f64(-12345.0, '.'), "-12.345");
 
-    info!("Hundreds of thousands");
+    // Hundreds of thousands
     assert_eq!(integer_part_f64(123456.0, '.'), "123.456");
     assert_eq!(integer_part_f64(-123456.0, '.'), "-123.456");
 
-    info!("Millions");
+    // Millions
     assert_eq!(integer_part_f64(1234567.0, '.'), "1.234.567");
     assert_eq!(integer_part_f64(-1234567.0, '.'), "-1.234.567");
 
-    info!("Tens of millions");
+    // Tens of millions
     assert_eq!(integer_part_f64(12345678.0, '.'), "12.345.678");
     assert_eq!(integer_part_f64(-12345678.0, '.'), "-12.345.678");
 
-    info!("Hundreds of millions");
+    // Hundreds of millions
     assert_eq!(integer_part_f64(123456789.0, '.'), "123.456.789");
     assert_eq!(integer_part_f64(-123456789.0, '.'), "-123.456.789");
 
-    info!("Billions / Millardos");
+    // Billions / Millardos
     assert_eq!(integer_part_f64(1234567890.0, '.'), "1.234.567.890");
     assert_eq!(integer_part_f64(-1234567890.0, '.'), "-1.234.567.890");
 
-    info!("Tens of billions / Decenas de millardos");
+    // Tens of billions / Decenas de millardos
     assert_eq!(integer_part_f64(12345678901.0, '.'), "12.345.678.901");
     assert_eq!(integer_part_f64(-12345678901.0, '.'), "-12.345.678.901");
 
-    info!("Hundreds of billions / Cientos de millardos");
+    // Hundreds of billions / Cientos de millardos
     assert_eq!(integer_part_f64(123456789012.0, '.'), "123.456.789.012");
     assert_eq!(integer_part_f64(-123456789012.0, '.'), "-123.456.789.012");
 
-    info!("Trillions (10^12) / Billones");
+    // Trillions (10^12) / Billones
     assert_eq!(integer_part_f64(1234567890123.0, '.'), "1.234.567.890.123");
     assert_eq!(
         integer_part_f64(-1234567890123.0, '.'),
         "-1.234.567.890.123"
     );
 
-    info!("Tens of trillions (10^13) / Decenas de billones");
+    // Tens of trillions (10^13) / Decenas de billones
     assert_eq!(
         integer_part_f64(12345678901234.0, '.'),
         "12.345.678.901.234"
@@ -295,7 +269,7 @@ fn integer_part_tests() {
         "-12.345.678.901.234"
     );
 
-    info!("Hundreds of trillions (10^14) / Cientos de billones");
+    // Hundreds of trillions (10^14) / Cientos de billones
     assert_eq!(
         integer_part_f64(123456789012345.0, '.'),
         "123.456.789.012.345"
@@ -305,7 +279,7 @@ fn integer_part_tests() {
         "-123.456.789.012.345"
     );
 
-    info!("Quadrillion (10^15) / Billardo");
+    // Quadrillion (10^15) / Billardo
     assert_eq!(
         integer_part_f64(1234567890123456.0, '.'),
         "1.234.567.890.123.456"
@@ -318,7 +292,6 @@ fn integer_part_tests() {
 
 #[test]
 fn decimal_part_tests() {
-    env_logger::try_init().unwrap();
     assert_eq!(decimal_part_f64(0.1, 1, ' '), "1");
     assert_eq!(decimal_part_f64(0.12, 1, ' '), "1");
 
@@ -348,11 +321,15 @@ fn decimal_part_tests() {
 
 #[test]
 fn tests() {
-    env_logger::try_init().unwrap();
+    assert_eq!(dinero_f32(3.1415926), "3,14");
+    assert_eq!(dinero_f32(1000000.44), "1.000.000,43");
+    assert_eq!(dinero_f64(10000000.44), "10.000.000,43");
+
     assert_eq!(
         endinero_f64(1234567.456, 2, 4, '.', ',', ' '),
         "1.234.567,45"
     );
+
     assert_eq!(
         endinero_f64(-1234567.456789, 2, 4, '.', ',', ' '),
         "-1.234.567,45"
@@ -379,7 +356,7 @@ fn tests() {
 
     // info!("Hundreds of trillions (10^14) / Cientos de billones");
     let x: f64 = 123456789012345.1234;
-    assert_eq!(dinero_f64(x), "123.456.789.012.345,12");
+    assert_eq!(dinero_f64(x), "123.456.789.012.345,12"); // rounding issue
 
     // should break here
     assert_ne!(dinero_f64(x), "1.234.567.890.123.456,12");
@@ -387,9 +364,11 @@ fn tests() {
 
     assert_eq!(dinero_f32(10.111), "10,11");
     assert_eq!(dinero_f32(-10.111), "-10,11");
-    assert_eq!(dinero_f32(10000000.1232456), "10.000.000,12");
+
+
     assert_eq!(dinero_f32(0.2223334445556), "0,222 333 4");
 
-    assert_eq!(dinero_f32(10000000.12324567), "10.000.000,12");
+    // rounding issue here
+    assert_eq!(dinero_f32(11111111.1234), "11.111.111,0");
     assert_eq!(dinero_f32(0.1234567), "0,123 456 7");
 }
