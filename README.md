@@ -69,7 +69,7 @@ Note: As integer portions get larger, there might be rounding issues with the de
 
 Add to your Cargo.toml
 ```toml
-endinero = "0.1.1"
+endinero = "0.1.3"
 ```
 
 ## License
