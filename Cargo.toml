@@ -1,13 +1,16 @@
 [package]
 name = "endinero"
-version = "0.1.4"
+version = "0.1.5"
 rust-version = "1.65"
 edition = "2021"
 authors = [ "DiarioBitcoin", "gubatron" ]
 license = "Apache-2.0"
 description = "Utility functions to format numbers as money designed for Spanish/European speaking locales."
 readme = "README.md"
-repository = "https://github.com/diariobitcoin/endinero"
+#On the week of december 11th, we noticed github suspended our account without notice
+#leaving this for now in case github comes back, we like github better than gitlab
+#repository = "https://github.com/diariobitcoin/endinero"
+repository = "https://gitlab.com/diariobitcoin1/endinero.git"
 keywords = ["formatting", "money", "dinero", "diariobitcoin", "number-formatting"]
 
 [lib]
