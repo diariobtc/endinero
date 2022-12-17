@@ -371,4 +371,10 @@ fn tests() {
     // rounding issue here
     assert_eq!(dinero_f32(11111111.1234), "11.111.111,0");
     assert_eq!(dinero_f32(0.1234567), "0,123 456 7");
+
+    assert_eq!(money_f32(12345678.123456), "12,345,678.12");
+    assert_eq!(money_f32(1.123456),"1.12");
+    assert_eq!(money_f32(0.123456789),"0.123 456 7");
+    assert_eq!(money_f64(0.123456789),"0.123 456 789");
+    assert_eq!(money_f64(0.123456789012345),"0.123 456 789 012 345");
 }

@@ -38,7 +38,22 @@ assert_eq!(
     "-1.234.567,456 7"
 );
 ```
+If you also need to format US dollars for American english we've included `endinero::money_f32` and `endinero::money_f64` formatters.
 
+```rust
+// it will show only two decimals for numbers > 0
+assert_eq!(money_f32(12345678.123456), "12,345,678.12");
+assert_eq!(money_f32(1.123456),"1.12");
+
+// it will show up to 7 decimals correctly for numbers < 1 if you pass an `f32` value
+assert_eq!(money_f32(0.123456789),"0.123 456 7");
+
+// we recommend you work with f64 if you're dealing with very small amounts
+assert_eq!(money_f64(0.123456789),"0.123 456 789");
+
+// up to 15 decimals correctly with f64
+assert_eq!(money_f64(0.123456789012345),"0.123 456 789 012 345");
+```
 
 ## Limits
 
