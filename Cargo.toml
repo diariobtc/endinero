@@ -1,6 +1,6 @@
 [package]
 name = "endinero"
-version = "0.1.6"
+version = "0.1.7"
 rust-version = "1.65"
 edition = "2021"
 authors = [ "DiarioBitcoin", "gubatron" ]
@@ -10,7 +10,7 @@ readme = "README.md"
 #On the week of december 11th, we noticed github suspended our account without notice
 #leaving this for now in case github comes back, we like github better than gitlab
 #repository = "https://github.com/diariobitcoin/endinero"
-repository = "https://gitlab.com/diariobitcoin1/endinero.git"
+repository = "https://github.com/diariobtc/endinero"
 keywords = ["formatting", "money", "dinero", "diariobitcoin", "number-formatting"]
 
 [lib]
