@@ -41,7 +41,12 @@ pub fn endinero_f64(
         max_decimal_places
     };
     let dec_part = decimal_part_f64(amount, total_decimals, decimals_separator);
-    format!("{}{}{}", int_part, radix_character, dec_part)
+
+    let mut result = String::with_capacity(int_part.len() + dec_part.len() + 1);
+    result.push_str(&int_part);
+    result.push(radix_character);
+    result.push_str(&dec_part);
+    result
 }
 
 /// ## Customize the separator characters and decimal precision used to format the output of the given `f32` number
@@ -66,17 +71,19 @@ pub fn endinero_f32(
     radix_character: char,
     decimals_separator: char,
 ) -> String {
-    // INTEGER PART
     let int_part = integer_part_f32(amount, thousands_separator);
     let total_decimals = if amount.abs() < 1.0 {
         zero_comma_decimal_places
     } else {
         max_decimal_places
     };
-    // DECIMAL PART
     let dec_part = decimal_part_f32(amount, total_decimals, decimals_separator);
-    // RESULT
-    format!("{}{}{}", int_part, radix_character, dec_part)
+
+    let mut result = String::with_capacity(int_part.len() + dec_part.len() + 1);
+    result.push_str(&int_part);
+    result.push(radix_character);
+    result.push_str(&dec_part);
+    result
 }
 
 /// Format `f64` input into a spanish money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `.`, Radix character: `,`, Decimals separator: ` `
@@ -94,44 +101,48 @@ pub fn money_f64(amount: f64) -> String {
     endinero_f64(amount, 2, 17, ',', '.', ' ')
 }
 
-/// Format `f32` input into a US money format, max 2 decimal places if amount > 0, up to 17 decimal places for amount < 1. Thousands separator: `,`, Radix character: `.`, Decimals separator: ` `
-pub fn money_f32(amount: f64) -> String {
-    endinero_f64(amount, 2, 7, ',', '.', ' ')
+/// Format `f32` input into a US money format, max 2 decimal places if amount > 0, up to 7 decimal places for amount < 1. Thousands separator: `,`, Radix character: `.`, Decimals separator: ` `
+pub fn money_f32(amount: f32) -> String {
+    endinero_f32(amount, 2, 7, ',', '.', ' ')
 }
 
 fn integer_part_f64(amount: f64, thousands_separator: char) -> String {
     let int_part = amount.abs().trunc() as i64;
     let unsigned_int_digits_str = format!("{}", int_part);
-    let mut formatted_int_digits: Vec<char> = Vec::new();
-    for (digits_added, c) in unsigned_int_digits_str.chars().rev().enumerate() {
-        if digits_added > 0 && digits_added % 3 == 0 {
-            formatted_int_digits.push(thousands_separator);
+    let digits_len = unsigned_int_digits_str.len();
+    let separator_count = (digits_len.saturating_sub(1)) / 3;
+    let mut result = String::with_capacity(digits_len + separator_count);
+
+    for (i, c) in unsigned_int_digits_str.chars().enumerate() {
+        if i > 0 && (digits_len - i) % 3 == 0 {
+            result.push(thousands_separator);
         }
-        formatted_int_digits.push(c);
+        result.push(c);
     }
+
     if amount < 0f64 {
-        formatted_int_digits.push('-');
+        result.insert(0, '-');
     }
-    formatted_int_digits.reverse();
-    let result = formatted_int_digits.iter().collect::<String>();
     result
 }
 
 fn integer_part_f32(amount: f32, thousands_separator: char) -> String {
     let int_part = amount.abs().trunc() as i32;
-    let unsigned_int_digits_str = int_part.to_string(); //format!("{}", int_part);
-    let mut formatted_int_digits: Vec<char> = Vec::new();
-    for (digits_added, c) in unsigned_int_digits_str.chars().rev().enumerate() {
-        if digits_added > 0 && digits_added % 3 == 0 {
-            formatted_int_digits.push(thousands_separator);
+    let unsigned_int_digits_str = int_part.to_string();
+    let digits_len = unsigned_int_digits_str.len();
+    let separator_count = (digits_len.saturating_sub(1)) / 3;
+    let mut result = String::with_capacity(digits_len + separator_count);
+
+    for (i, c) in unsigned_int_digits_str.chars().enumerate() {
+        if i > 0 && (digits_len - i).is_multiple_of(3) {
+            result.push(thousands_separator);
         }
-        formatted_int_digits.push(c);
+        result.push(c);
     }
+
     if amount < 0f32 {
-        formatted_int_digits.push('-');
+        result.insert(0, '-');
     }
-    formatted_int_digits.reverse();
-    let result = formatted_int_digits.iter().collect::<String>();
     result
 }
 
@@ -140,13 +151,13 @@ fn format_decimal_digits(
     total_decimals: u16,
     decimals_separator: char,
 ) -> String {
-    let mut formatted_dec_digits: Vec<char> = Vec::new();
+    let mut result = String::with_capacity(total_decimals as usize + 4);
     let mut digits_added = 0;
     for c in dec_digits_str.chars() {
         if digits_added > 0 && digits_added % 3 == 0 {
-            formatted_dec_digits.push(decimals_separator);
+            result.push(decimals_separator);
         }
-        formatted_dec_digits.push(c);
+        result.push(c);
         digits_added += 1;
 
         if digits_added == total_decimals {
@@ -155,35 +166,32 @@ fn format_decimal_digits(
     }
 
     // remove any zeroes or blank spaces left over at the end
-    while formatted_dec_digits.len() > 1
-        && formatted_dec_digits.last().is_some()
-        && (formatted_dec_digits.last().unwrap() == &'0'
-            || formatted_dec_digits.last().unwrap() == &' ')
-    {
-        formatted_dec_digits.pop();
+    while result.len() > 1 {
+        match result.chars().last() {
+            Some('0') | Some(' ') => result.pop(),
+            _ => break,
+        };
     }
 
-    formatted_dec_digits.iter().collect::<String>()
+    result
 }
 
 fn decimal_part_f64(amount: f64, total_decimals: u16, decimals_separator: char) -> String {
-    let dec_digits_str = format!("{:.17}", amount)
-        .split(".")
-        .collect::<Vec<&str>>()
-        .get(1)
-        .unwrap()
-        .to_string();
-    format_decimal_digits(&dec_digits_str, total_decimals, decimals_separator)
+    let formatted = format!("{:.17}", amount);
+    let dec_digits_str = formatted
+        .split_once('.')
+        .map(|(_, dec)| dec)
+        .unwrap_or("");
+    format_decimal_digits(dec_digits_str, total_decimals, decimals_separator)
 }
 
 fn decimal_part_f32(amount: f32, total_decimals: u16, decimals_separator: char) -> String {
-    let dec_digits_str = format!("{:.7}", amount)
-        .split(".")
-        .collect::<Vec<&str>>()
-        .get(1)
-        .unwrap()
-        .to_string();
-    format_decimal_digits(&dec_digits_str, total_decimals, decimals_separator)
+    let formatted = format!("{:.7}", amount);
+    let dec_digits_str = formatted
+        .split_once('.')
+        .map(|(_, dec)| dec)
+        .unwrap_or("");
+    format_decimal_digits(dec_digits_str, total_decimals, decimals_separator)
 }
 
 #[test]
@@ -362,9 +370,10 @@ fn tests() {
     assert_eq!(dinero_f32(11111111.1234), "11.111.111,0");
     assert_eq!(dinero_f32(0.1234567), "0,123 456 7");
 
-    assert_eq!(money_f32(12345678.123456), "12,345,678.12");
-    assert_eq!(money_f32(1.123456), "1.12");
-    assert_eq!(money_f32(0.123456789), "0.123 456 7");
+    // f32 has limited precision, so use smaller numbers to preserve decimals
+    assert_eq!(money_f32(1234567.125), "1,234,567.12");
+    assert_eq!(money_f32(1.125), "1.12");
+    assert_eq!(money_f32(0.123456), "0.123 456");
     assert_eq!(money_f64(0.123456789), "0.123 456 789");
     assert_eq!(money_f64(0.123456789012345), "0.123 456 789 012 345");
 }
