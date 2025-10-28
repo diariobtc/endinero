@@ -135,13 +135,11 @@ fn integer_part_f32(amount: f32, thousands_separator: char) -> String {
     result
 }
 
-fn decimal_part_f64(amount: f64, total_decimals: u16, decimals_separator: char) -> String {
-    let dec_digits_str = format!("{:.17}", amount)
-        .split(".")
-        .collect::<Vec<&str>>()
-        .get(1)
-        .unwrap()
-        .to_string();
+fn format_decimal_digits(
+    dec_digits_str: &str,
+    total_decimals: u16,
+    decimals_separator: char,
+) -> String {
     let mut formatted_dec_digits: Vec<char> = Vec::new();
     let mut digits_added = 0;
     for c in dec_digits_str.chars() {
@@ -165,8 +163,17 @@ fn decimal_part_f64(amount: f64, total_decimals: u16, decimals_separator: char) 
         formatted_dec_digits.pop();
     }
 
-    let result = formatted_dec_digits.iter().collect::<String>();
-    result
+    formatted_dec_digits.iter().collect::<String>()
+}
+
+fn decimal_part_f64(amount: f64, total_decimals: u16, decimals_separator: char) -> String {
+    let dec_digits_str = format!("{:.17}", amount)
+        .split(".")
+        .collect::<Vec<&str>>()
+        .get(1)
+        .unwrap()
+        .to_string();
+    format_decimal_digits(&dec_digits_str, total_decimals, decimals_separator)
 }
 
 fn decimal_part_f32(amount: f32, total_decimals: u16, decimals_separator: char) -> String {
@@ -176,30 +183,7 @@ fn decimal_part_f32(amount: f32, total_decimals: u16, decimals_separator: char) 
         .get(1)
         .unwrap()
         .to_string();
-    let mut formatted_dec_digits: Vec<char> = Vec::new();
-    let mut digits_added = 0;
-    for c in dec_digits_str.chars() {
-        if digits_added > 0 && digits_added % 3 == 0 {
-            formatted_dec_digits.push(decimals_separator);
-        }
-        formatted_dec_digits.push(c);
-        digits_added += 1;
-
-        if digits_added == total_decimals {
-            break;
-        }
-    }
-    // remove any zeroes or blank spaces left over at the end
-    while formatted_dec_digits.len() > 1
-        && formatted_dec_digits.last().is_some()
-        && (formatted_dec_digits.last().unwrap() == &'0'
-            || formatted_dec_digits.last().unwrap() == &' ')
-    {
-        formatted_dec_digits.pop();
-    }
-
-    let result = formatted_dec_digits.iter().collect::<String>();
-    result
+    format_decimal_digits(&dec_digits_str, total_decimals, decimals_separator)
 }
 
 #[test]
@@ -326,7 +310,7 @@ fn decimal_part_tests() {
 
 #[test]
 fn tests() {
-    assert_eq!(dinero_f32(3.1415926), "3,14");
+    assert_eq!(dinero_f32(std::f32::consts::PI), "3,14");
     assert_eq!(dinero_f32(1000000.44), "1.000.000,43");
     assert_eq!(dinero_f64(10000000.44), "10.000.000,43");
 
