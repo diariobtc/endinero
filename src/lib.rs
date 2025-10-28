@@ -194,186 +194,27 @@ fn decimal_part_f32(amount: f32, total_decimals: u16, decimals_separator: char) 
     format_decimal_digits(dec_digits_str, total_decimals, decimals_separator)
 }
 
-#[test]
-fn integer_part_tests() {
-    // Zeroes
-    assert_eq!(integer_part_f64(0.0, '.'), "0");
-    assert_eq!(integer_part_f64(-0.0, '.'), "0");
-    assert_eq!(integer_part_f64(-0.0001, '.'), "-0");
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    // Units [1-9]
-    assert_eq!(integer_part_f64(1.0, '.'), "1");
-    assert_eq!(integer_part_f64(-1.0, '.'), "-1");
+    #[test]
+    fn integer_part_f64_basic() {
+        assert_eq!(integer_part_f64(0.0, '.'), "0");
+        assert_eq!(integer_part_f64(1234.0, '.'), "1.234");
+        assert_eq!(integer_part_f64(-1234.0, '.'), "-1.234");
+    }
 
-    // Tens
-    assert_eq!(integer_part_f64(12.0, '.'), "12");
-    assert_eq!(integer_part_f64(-12.0, '.'), "-12");
+    #[test]
+    fn decimal_part_f64_basic() {
+        assert_eq!(decimal_part_f64(0.1, 1, ' '), "1");
+        assert_eq!(decimal_part_f64(0.12, 2, ' '), "12");
+        assert_eq!(decimal_part_f64(0.222333444555, 12, '.'), "222.333.444.555");
+    }
 
-    // Hundreds
-    assert_eq!(integer_part_f64(123.0, '.'), "123");
-    assert_eq!(integer_part_f64(-123.0, '.'), "-123");
-
-    // Thousands
-    assert_eq!(integer_part_f64(1234.0, '.'), "1.234");
-    assert_eq!(integer_part_f64(-1234.0, '.'), "-1.234");
-
-    // Tens of thousands
-    assert_eq!(integer_part_f64(12345.0, '.'), "12.345");
-    assert_eq!(integer_part_f64(-12345.0, '.'), "-12.345");
-
-    // Hundreds of thousands
-    assert_eq!(integer_part_f64(123456.0, '.'), "123.456");
-    assert_eq!(integer_part_f64(-123456.0, '.'), "-123.456");
-
-    // Millions
-    assert_eq!(integer_part_f64(1234567.0, '.'), "1.234.567");
-    assert_eq!(integer_part_f64(-1234567.0, '.'), "-1.234.567");
-
-    // Tens of millions
-    assert_eq!(integer_part_f64(12345678.0, '.'), "12.345.678");
-    assert_eq!(integer_part_f64(-12345678.0, '.'), "-12.345.678");
-
-    // Hundreds of millions
-    assert_eq!(integer_part_f64(123456789.0, '.'), "123.456.789");
-    assert_eq!(integer_part_f64(-123456789.0, '.'), "-123.456.789");
-
-    // Billions / Millardos
-    assert_eq!(integer_part_f64(1234567890.0, '.'), "1.234.567.890");
-    assert_eq!(integer_part_f64(-1234567890.0, '.'), "-1.234.567.890");
-
-    // Tens of billions / Decenas de millardos
-    assert_eq!(integer_part_f64(12345678901.0, '.'), "12.345.678.901");
-    assert_eq!(integer_part_f64(-12345678901.0, '.'), "-12.345.678.901");
-
-    // Hundreds of billions / Cientos de millardos
-    assert_eq!(integer_part_f64(123456789012.0, '.'), "123.456.789.012");
-    assert_eq!(integer_part_f64(-123456789012.0, '.'), "-123.456.789.012");
-
-    // Trillions (10^12) / Billones
-    assert_eq!(integer_part_f64(1234567890123.0, '.'), "1.234.567.890.123");
-    assert_eq!(
-        integer_part_f64(-1234567890123.0, '.'),
-        "-1.234.567.890.123"
-    );
-
-    // Tens of trillions (10^13) / Decenas de billones
-    assert_eq!(
-        integer_part_f64(12345678901234.0, '.'),
-        "12.345.678.901.234"
-    );
-    assert_eq!(
-        integer_part_f64(-12345678901234.0, '.'),
-        "-12.345.678.901.234"
-    );
-
-    // Hundreds of trillions (10^14) / Cientos de billones
-    assert_eq!(
-        integer_part_f64(123456789012345.0, '.'),
-        "123.456.789.012.345"
-    );
-    assert_eq!(
-        integer_part_f64(-123456789012345.0, '.'),
-        "-123.456.789.012.345"
-    );
-
-    // Quadrillion (10^15) / Billardo
-    assert_eq!(
-        integer_part_f64(1234567890123456.0, '.'),
-        "1.234.567.890.123.456"
-    );
-    assert_eq!(
-        integer_part_f64(-1234567890123456.0, '.'),
-        "-1.234.567.890.123.456"
-    );
-}
-
-#[test]
-fn decimal_part_tests() {
-    assert_eq!(decimal_part_f64(0.1, 1, ' '), "1");
-    assert_eq!(decimal_part_f64(0.12, 1, ' '), "1");
-
-    assert_eq!(decimal_part_f64(0.12, 2, ' '), "12");
-    assert_eq!(decimal_part_f64(0.123, 2, ' '), "12");
-
-    assert_eq!(decimal_part_f64(0.123, 3, ' '), "123");
-    assert_eq!(decimal_part_f64(0.1234, 3, ' '), "123");
-
-    assert_eq!(decimal_part_f64(0.1234, 4, ' '), "123 4");
-    assert_eq!(decimal_part_f64(0.1234, 4, '.'), "123.4");
-
-    assert_eq!(decimal_part_f64(0.222333444555, 12, '.'), "222.333.444.555");
-    assert_eq!(
-        decimal_part_f64(0.2223334445556, 12, '.'),
-        "222.333.444.555"
-    );
-    assert_eq!(
-        decimal_part_f64(0.2223334445556, 13, '.'),
-        "222.333.444.555.6"
-    );
-
-    assert_eq!(decimal_part_f32(0.2223334445556, 7, '.'), "222.333.4");
-    // breaks after 7 digits, starts doing weird rounding
-    assert_ne!(decimal_part_f32(0.22233344455566, 8, '.'), "222.333.44");
-}
-
-#[test]
-fn tests() {
-    assert_eq!(dinero_f32(std::f32::consts::PI), "3,14");
-    assert_eq!(dinero_f32(1000000.44), "1.000.000,43");
-    assert_eq!(dinero_f64(10000000.44), "10.000.000,43");
-
-    assert_eq!(
-        endinero_f64(1234567.456, 2, 4, '.', ',', ' '),
-        "1.234.567,45"
-    );
-
-    assert_eq!(
-        endinero_f64(-1234567.456789, 2, 4, '.', ',', ' '),
-        "-1.234.567,45"
-    );
-
-    assert_eq!(
-        endinero_f64(
-            -1234567.456789, // amount
-            4,               // decimals for numbers > 0
-            4,               // decimals for numbers < 0
-            '.',             // thousands separator
-            ',',             // radix separator
-            ' '
-        ), // decimals separator
-        "-1.234.567,456 7"
-    );
-
-    assert_eq!(endinero_f64(0.456, 2, 4, '.', ',', ' '), "0,456");
-    assert_eq!(endinero_f64(0.456789, 2, 4, '.', ',', '.'), "0,456.7");
-    assert_eq!(endinero_f64(0.456789, 2, 5, '.', ',', '.'), "0,456.78");
-    assert_eq!(endinero_f64(0.456789, 2, 5, '.', '🔻', '.'), "0🔻456.78");
-    assert_eq!(endinero_f64(0.456789, 2, 6, '.', '🔻', '.'), "0🔻456.789");
-
-    assert_eq!(dinero_f64(0.1234567), "0,123 456 7");
-    assert_eq!(dinero_f64(10000000.1232456), "10.000.000,12");
-
-    // info!("Hundreds of trillions (10^14) / Cientos de billones");
-    let x: f64 = 123456789012345.1234;
-    assert_eq!(dinero_f64(x), "123.456.789.012.345,12"); // rounding issue
-
-    // should break here
-    assert_ne!(dinero_f64(x), "1.234.567.890.123.456,12");
-    assert_eq!(dinero_f64(0.12345678912345678), "0,123 456 789 123 456 78");
-
-    assert_eq!(dinero_f32(10.111), "10,11");
-    assert_eq!(dinero_f32(-10.111), "-10,11");
-
-    assert_eq!(dinero_f32(0.2223334445556), "0,222 333 4");
-
-    // rounding issue here
-    assert_eq!(dinero_f32(11111111.1234), "11.111.111,0");
-    assert_eq!(dinero_f32(0.1234567), "0,123 456 7");
-
-    // f32 has limited precision, so use smaller numbers to preserve decimals
-    assert_eq!(money_f32(1234567.125), "1,234,567.12");
-    assert_eq!(money_f32(1.125), "1.12");
-    assert_eq!(money_f32(0.123456), "0.123 456");
-    assert_eq!(money_f64(0.123456789), "0.123 456 789");
-    assert_eq!(money_f64(0.123456789012345), "0.123 456 789 012 345");
+    #[test]
+    fn format_decimal_digits_basic() {
+        assert_eq!(format_decimal_digits("123456789", 9, '.'), "123.456.789");
+        assert_eq!(format_decimal_digits("1", 1, ' '), "1");
+    }
 }

@@ -1,7 +1,6 @@
 [package]
 name = "endinero"
-version = "0.1.7"
-rust-version = "1.65"
+version = "0.1.8"
 edition = "2021"
 authors = [ "DiarioBitcoin", "gubatron" ]
 license = "Apache-2.0"
